@@ -20,21 +20,31 @@ class Dataset():
         self.PD = []
         self.GT = []
 
-        self.data = []
-        self.class_num = 0
+        self.cn = 3
+        self.fn = 3
 
-        self.test = []
         self.train = []
         self.valid = []
 
+        self.test = []
+        self.test_num = 0
+        self.dims = []
+
         return
 
-    def load_data(self, path, name):
+    def load_data(self, path, name, norm=False):
         '''
         '''
 
         data = sio.loadmat(path)[name]
+        if norm:
+            data -= np.min(data)
+            data /= np.max(data)
+
         exec('self.' + name + '= data')
+
+        if name == 'GT':
+            self.dims = data.shape
 
         return
 
@@ -59,6 +69,7 @@ class Dataset():
         plt.imshow(data[:, :, no], cmap='gray')
         plt.axis('off')
         plt.show()
+
         return
 
     def plot_scatters(self):
@@ -66,43 +77,58 @@ class Dataset():
         '''
         return
 
-    def extract_data(self, GT_mask, class_num):
+    def extract_data(self, GT_mask, s_idx):
         '''
         '''
 
-        self.class_num = class_num
-        self.data = np.array([]).reshape((-1, class_num + 1))
-        for i in range(1, class_num + 1):
-            T1 = self.T1[GT_mask == i].reshape((-1, 1))
-            T2 = self.T2[GT_mask == i].reshape((-1, 1))
-            PD = self.PD[GT_mask == i].reshape((-1, 1))
+        data = np.array([]).reshape((-1, self.cn + 2))
+        for i in range(1, self.cn + 1):
+            mask = (GT_mask == i)
+            idx = np.where(mask.flatten())[0].reshape((-1, 1))
+            T1 = self.T1[:, :, s_idx][mask].reshape((-1, 1))
+            T2 = self.T2[:, :, s_idx][mask].reshape((-1, 1))
+            PD = self.PD[:, :, s_idx][mask].reshape((-1, 1))
 
             label = np.ones(T1.shape) * i
 
-            one_class = np.hstack((T1, T2, PD, label))
-            self.data = np.vstack((self.data, one_class))
+            one_class = np.hstack((idx, T1, T2, PD, label))
+            data = np.vstack((data, one_class))
 
-        return
+        new_idx = np.random.permutation(data.shape[0])
 
-    def group_data(self, prop=[0.6, 0.2, 0.2]):
+        return data[new_idx, :]
+
+    def group_data(self, GT_mask, prop=[0.6, 0.2, 0.2]):
         '''
         '''
 
-        self.test = np.array([]).reshape((-1, self.class_num + 1))
-        self.train = np.array([]).reshape((-1, self.class_num + 1))
-        self.valid = np.array([]).reshape((-1, self.class_num + 1))
+        slice_num = GT_mask.shape[2]
+        slice_idx = np.random.permutation(slice_num)
 
-        for i in range(1, self.class_num + 1):
-            idx = np.where(self.data[:, -1] == i)[0]
-            data_num = idx.shape[0]
+        tn = int(np.round(slice_num * prop[0]))
+        vn = int(np.round(slice_num * prop[1]))
 
-            tn_pos = int(np.round(data_num * prop[0]))
-            vt_pos = int(np.round(data_num * prop[1])) + tn_pos
-            # tt_pos = int(np.round(data_num * prop[2])) + vt_pos
+        trs_idx = slice_idx[:tn]
+        vas_idx = slice_idx[tn:(tn + vn - 1)]
+        tes_idx = slice_idx[(tn + vn):]
 
-            idx = np.random.permutation(idx)
-            self.train = np.vstack((self.train, self.data[idx[:tn_pos], :]))
-            self.valid = np.vstack((self.valid, self.data[idx[tn_pos:vt_pos - 1], :]))
-            self.test = np.vstack((self.test, self.data[idx[vt_pos:data_num - 1], :]))
+        self.train = self.extract_data(GT_mask[:, :, trs_idx], trs_idx)
+        self.valid = self.extract_data(GT_mask[:, :, vas_idx], vas_idx)
+
+        f = open('idx.txt', 'w')
+        for item in tes_idx:
+            f.write("{}\n".format(item))
 
         return
+
+    def test_data(self, GT_mask, idx_path='idx.txt'):
+        '''
+        '''
+
+        f = open('idx.txt', 'r')
+        tes_idx = [int(l.split('\n')[0]) for l in f.readlines()]
+
+        self.test = self.extract_data(GT_mask[:, :, tes_idx], tes_idx)
+        self.test_num = len(tes_idx)
+
+        return np.array(tes_idx)

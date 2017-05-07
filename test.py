@@ -1,14 +1,15 @@
 # Created by Qixun Qu
 # quqixun@gmail.com
-# 2017/05/06
+# 2017/05/07
 #
 
 
+import numpy as np
 from dataset import Dataset
-from train_model import TrainModel
+from test_model import TestModel
 
 
-# Load data for training
+# Load data for testing model
 T1_path = 'Data/T1.mat'
 T2_path = 'Data/T2.mat'
 PD_path = 'Data/PD.mat'
@@ -21,8 +22,6 @@ ds.load_data(T2_path, 'T2', norm=True)
 ds.load_data(PD_path, 'PD', norm=True)
 ds.load_data(GT_path, 'GT')
 
-# ds.plot_slice(GT, 90)
-
 # Generate training and validation data
 CSF_mask = ds.get_mask(ds.GT, values=1, label=1)
 GM_mask = ds.get_mask(ds.GT, values=[2, 8], label=2)
@@ -31,9 +30,16 @@ GT_mask = CSF_mask + GM_mask + WM_mask
 
 # ds.plot_slice(GT_mask, 90)
 
-ds.group_data(GT_mask)
+idx = ds.test_data(GT_mask, 'idx.txt')
+idx_median = int(np.median(idx))
+idx_pos = np.where(idx == idx_median)[0]
 
-# Training the model
-tm = TrainModel(ds)
-tm.train_model(epochs=10, iters=100,
-               batch_size=500, learning_rate=3e-4)
+if len(idx_pos) == 0:
+    slice_no = np.where(idx == (idx_median + 1))[0]
+else:
+    slice_no = idx_pos
+
+# Test model
+tm = TestModel(ds)
+tm.test_model()
+tm.compare_slice(slice_no)
