@@ -30,7 +30,9 @@ GT_mask = CSF_mask + GM_mask + WM_mask
 
 # ds.plot_slice(GT_mask, 90)
 
-idx = ds.test_data(GT_mask, 'idx.txt')
+f = open('idx.txt', 'r')
+idx = np.array([int(l.split('\n')[0]) for l in f.readlines()])
+
 idx_median = int(np.median(idx))
 idx_pos = np.where(idx == idx_median)[0]
 
@@ -39,7 +41,9 @@ if len(idx_pos) == 0:
 else:
     slice_no = idx_pos
 
+ds.test_data(GT_mask, idx[slice_no])
+
 # Test model
 tm = TestModel(ds)
 tm.test_model()
-tm.compare_slice(slice_no)
+tm.compare_slice()

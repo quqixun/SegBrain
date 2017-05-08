@@ -121,14 +121,14 @@ class Dataset():
 
         return
 
-    def test_data(self, GT_mask, idx_path='idx.txt'):
+    def test_data(self, GT_mask, idx):
         '''
         '''
 
-        f = open('idx.txt', 'r')
-        tes_idx = [int(l.split('\n')[0]) for l in f.readlines()]
+        # f = open('idx.txt', 'r')
+        # tes_idx = [int(l.split('\n')[0]) for l in f.readlines()]
 
-        self.test = self.extract_data(GT_mask[:, :, tes_idx], tes_idx)
-        self.test_num = len(tes_idx)
+        self.test = self.extract_data(GT_mask[:, :, idx], idx)
+        # self.test_num = len(idx)
 
-        return np.array(tes_idx)
+        return  # np.array(tes_idx)

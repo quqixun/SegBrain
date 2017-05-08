@@ -19,7 +19,7 @@ class TestModel():
         '''
 
         self.data = data.test
-        self.test_num = data.test_num
+        # self.test_num = data.test_num
         self.dims = data.dims
         self.fn = data.fn
         self.cn = data.cn
@@ -85,14 +85,11 @@ class TestModel():
 
         return
 
-    def compare_slice(self, slice_no=0):
+    def compare_slice(self):
         '''
         '''
 
-        if type(slice_no) != int:
-            slice_no = slice_no.item()
-
-        v_shape = np.append(self.dims[0:2], self.test_num)
+        v_shape = self.dims[0:2]
         pred_v = np.zeros(v_shape).reshape((-1, 1))
         true_v = np.zeros(v_shape).reshape((-1, 1))
 
@@ -105,11 +102,11 @@ class TestModel():
 
         plt.figure()
         plt.subplot(1, 2, 1)
-        plt.imshow(true_v[:, :, slice_no], cmap='gray')
+        plt.imshow(true_v, cmap='gray')
         plt.axis('off')
         plt.title('Ground Truth')
         plt.subplot(1, 2, 2)
-        plt.imshow(pred_v[:, :, slice_no], cmap='gray')
+        plt.imshow(pred_v, cmap='gray')
         plt.axis('off')
         plt.title('Prediction')
         plt.show()
