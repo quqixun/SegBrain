@@ -128,7 +128,9 @@ class Dataset():
         # f = open('idx.txt', 'r')
         # tes_idx = [int(l.split('\n')[0]) for l in f.readlines()]
 
+        print("You have chosen NO.{} slice.\n".format(idx))
         self.test = self.extract_data(GT_mask[:, :, idx], idx)
+
         # self.test_num = len(idx)
 
         return  # np.array(tes_idx)

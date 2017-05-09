@@ -59,6 +59,10 @@ class TestModel():
         '''
         '''
 
+        if self.data.shape[0] == 0:
+            print("Test slice - This slice has no CSF, GM and WM.")
+            return
+
         data_num = self.data.shape[0]
         x = tf.placeholder(tf.float32, shape=[data_num, self.fn])
 
@@ -89,6 +93,10 @@ class TestModel():
         '''
         '''
 
+        if self.data.shape[0] == 0:
+            print("Plot slice - This slice has no CSF, GM and WM.")
+            return
+
         v_shape = self.dims[0:2]
         pred_v = np.zeros(v_shape).reshape((-1, 1))
         true_v = np.zeros(v_shape).reshape((-1, 1))
@@ -100,15 +108,27 @@ class TestModel():
         pred_v = pred_v.reshape(v_shape)
         true_v = true_v.reshape(v_shape)
 
+        errors = np.where(pred_v != true_v)
+        x, y = errors[0], errors[1]
+
         plt.figure()
-        plt.subplot(1, 2, 1)
+        plt.subplot(1, 3, 1)
         plt.imshow(true_v, cmap='gray')
         plt.axis('off')
-        plt.title('Ground Truth')
-        plt.subplot(1, 2, 2)
+        plt.title('Ground Truth', fontsize=22)
+        plt.subplot(1, 3, 2)
         plt.imshow(pred_v, cmap='gray')
         plt.axis('off')
-        plt.title('Prediction')
+        plt.title('Prediction', fontsize=22)
+        plt.subplot(1, 3, 3)
+        plt.imshow(true_v, cmap='gray')
+        plt.scatter(y, x, s=3, c='r')
+        plt.axis('off')
+        plt.title('Errors ({0}/{1})'.format(len(x), len(self.pred)),
+                  fontsize=22)
+
+        fig = plt.get_current_fig_manager()
+        fig.window.showMaximized()
         plt.show()
 
         return

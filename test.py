@@ -31,15 +31,20 @@ GT_mask = CSF_mask + GM_mask + WM_mask
 # ds.plot_slice(GT_mask, 90)
 
 f = open('idx.txt', 'r')
-idx = np.array([int(l.split('\n')[0]) for l in f.readlines()])
+idx = [int(l.split('\n')[0]) for l in f.readlines()]
+idx = np.sort(np.array(idx))
 
 idx_median = int(np.median(idx))
 idx_pos = np.where(idx == idx_median)[0]
 
+# Show the middel slice
 if len(idx_pos) == 0:
     slice_no = np.where(idx == (idx_median + 1))[0]
 else:
     slice_no = idx_pos
+
+# Or you can appoint a slice between 0 and len(idx) - 1
+slice_no = 15
 
 ds.test_data(GT_mask, idx[slice_no])
 

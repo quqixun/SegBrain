@@ -21,7 +21,7 @@ class TrainModel():
 
         return
 
-    def hidden_layer(self, net, n_units=100, stddev=1e-4, name='hl'):
+    def dense_layer(self, net, n_units=100, stddev=1e-4, name='hl'):
         W = tf.truncated_normal_initializer(stddev=stddev)
         b = tf.truncated_normal_initializer(stddev=stddev)
 
@@ -34,11 +34,11 @@ class TrainModel():
         '''
 
         net = tl.layers.InputLayer(x, name='il')
-        net = self.hidden_layer(net, 256, 1 / (3 * 256), 'hl1')
+        net = self.dense_layer(net, 256, 1 / (3 * 256), 'hl1')
         net = tl.layers.BatchNormLayer(net, act=tf.nn.relu, name='bn1')
-        net = self.hidden_layer(net, 256, 1 / (256 * 256), 'hl2')
+        net = self.dense_layer(net, 256, 1 / (256 * 256), 'hl2')
         net = tl.layers.BatchNormLayer(net, act=tf.nn.relu, name='bn2')
-        net = self.hidden_layer(net, 3, 1 / (256 * 3), 'ol')
+        net = self.dense_layer(net, 3, 1 / (256 * 3), 'ol')
 
         return net
 
