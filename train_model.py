@@ -1,7 +1,9 @@
 # Created by Qixun Qu
 # quqixun@gmail.com
 # 2017/05/06
-#
+
+
+# This script it to buuld the model to be trained.
 
 
 import time
@@ -14,23 +16,42 @@ import matplotlib.pyplot as plt
 class TrainModel():
 
     def __init__(self, data=[]):
-        '''
+        '''__INIT__
+
+        Initialization of the instance.
+
         '''
 
-        self.data = data
+        self.data = data    # Test set
 
         return
 
     def dense_layer(self, net, n_units=100, stddev=1e-4, name='hl'):
+        '''DENSE_LAYER
+
+        Generate parameterd for two hidden layers and
+        the output layer.
+
+        '''
+        # Initialize the weights and bias
         W = tf.truncated_normal_initializer(stddev=stddev)
         b = tf.truncated_normal_initializer(stddev=stddev)
 
         net = tl.layers.DenseLayer(net, n_units=n_units, act=tf.identity,
                                    W_init=W, b_init=b, name=name)
+
         return net
 
     def build_network(self, x):
-        '''
+        '''BUILD_NETWORK
+
+        Net structure:
+        input:              500 x 3 (training batch)
+        1st hidden layer:   256 neurons, 3 x 256 weights
+        2nd hidden layer:   256 neurons, 256 x 256 weights
+        output layer:       3 neurons, 256 x 3 weights
+        output:             500 x 3 (3 classes)
+
         '''
 
         net = tl.layers.InputLayer(x, name='il')
@@ -43,7 +64,13 @@ class TrainModel():
         return net
 
     def reshape_labels(self, labels):
-        '''
+        '''RESHAOE_LABEL
+
+        Original label formation, for example: [1, 2, 3].
+
+        Redhaped label of the example:
+        [[1, 0, 0], [0, 1, 0], [0, 0, 1]].
+
         '''
 
         def sub2ind(shape, rows, cols):
@@ -59,7 +86,11 @@ class TrainModel():
         return np.reshape(lm, ls)
 
     def get_fd(self, data, batch_size):
-        '''
+        '''GET_FD
+
+        Generate feed dictionary which is to be input into
+        the model to train the model or evaluate by validating.
+
         '''
 
         num = data.shape[0]
@@ -71,22 +102,31 @@ class TrainModel():
 
     def train_model(self, epochs=10, iters=100,
                     batch_size=100, learning_rate=1e-3):
-        '''
+        '''TRAIN_MODEL
+
+        Main function to train the model.
+        Input parameters are basic settings for training process.
+
         '''
 
+        # Computation graph
         x = tf.placeholder(tf.float32, [batch_size, self.data.fn])
         y = tf.placeholder(tf.float32, [batch_size, self.data.cn])
 
         net = self.build_network(x)
 
+        # Obtain the net output
         y_out = net.outputs
         y_out = tf.reshape(y_out, shape=[batch_size, self.data.cn])
 
+        # Compute loss function
         loss = tf.reduce_mean(
             tf.nn.softmax_cross_entropy_with_logits(labels=y, logits=y_out))
 
+        # Define the optimizer
         op = tf.train.AdamOptimizer(learning_rate).minimize(loss)
 
+        # Calculate classification accuracy
         y_arg = tf.reshape(tf.argmax(y_out, 1), shape=[batch_size])
         correct_prediction = tf.equal(y_arg, tf.argmax(y, 1))
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
@@ -98,9 +138,12 @@ class TrainModel():
 
         sess.run(init)
 
+        # Initialize vectors to save results of each training step
         all_loss = np.zeros((epochs, 2))
         all_accu = np.zeros((epochs, 2))
 
+        # Run training iteration, in each iteration, print the result
+        # and put it into the vector
         for epoch in range(epochs):
             for i in range(iters):
                 t_set, t_lbl = self.get_fd(self.data.train, batch_size)
@@ -127,15 +170,21 @@ class TrainModel():
             all_loss[epoch, :] = np.array([t_loss, v_loss])
             all_accu[epoch, :] = np.array([t_accu, v_accu])
 
+        # Save model into a file for reusing
         tl.files.save_npz(net.all_params, 'model.npz')
         sess.close()
 
+        # Plot learning curve
         self.plot_loss_accu(all_loss, all_accu)
 
         return
 
     def plot_loss_accu(self, loss, accu):
-        '''
+        '''PLOT_LOSS_ACCU
+
+        Plot loss and accuracy of both training and validation
+        process with respect to iterations.
+
         '''
 
         x = np.arange(loss.shape[0]) + 1

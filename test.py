@@ -1,7 +1,10 @@
 # Created by Qixun Qu
 # quqixun@gmail.com
-# 2017/05/07
-#
+# 2017/05/06
+
+
+# This script is to implement the trained model
+# to segment brain tissues in a new slice.
 
 
 import numpy as np
@@ -28,8 +31,8 @@ GM_mask = ds.get_mask(ds.GT, values=[2, 8], label=2)
 WM_mask = ds.get_mask(ds.GT, values=3, label=3)
 GT_mask = CSF_mask + GM_mask + WM_mask
 
-# ds.plot_slice(GT_mask, 90)
-
+# Read a file which consists of all indices of slices
+# that can be used for testing purpose
 f = open('idx.txt', 'r')
 idx = [int(l.split('\n')[0]) for l in f.readlines()]
 idx = np.sort(np.array(idx))
@@ -37,14 +40,14 @@ idx = np.sort(np.array(idx))
 idx_median = int(np.median(idx))
 idx_pos = np.where(idx == idx_median)[0]
 
-# Show the middel slice
+# Use the median index of slice as a test case
 if len(idx_pos) == 0:
     slice_no = np.where(idx == (idx_median + 1))[0]
 else:
     slice_no = idx_pos
 
 # Or you can appoint a slice between 0 and len(idx) - 1
-slice_no = 15
+slice_no = 18
 
 ds.test_data(GT_mask, idx[slice_no])
 
