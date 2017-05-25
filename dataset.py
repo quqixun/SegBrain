@@ -8,7 +8,7 @@
 
 
 import numpy as np
-import scipy.io as sio
+import nibabel as nib
 import matplotlib.pyplot as plt
 
 
@@ -46,7 +46,7 @@ class Dataset():
 
         '''
 
-        data = sio.loadmat(path)[name]
+        data = nib.load(path).get_data()
         if norm:
             data -= np.min(data)
             data /= np.max(data)
@@ -79,15 +79,15 @@ class Dataset():
 
         return mask
 
-    def plot_slice(self, data, no):
+    def plot_slice(self, data, idx):
         '''PLOT_SLICE
 
-        Show one slice according to the given number.
+        Show one slice according to the given index.
 
         '''
 
         plt.figure()
-        plt.imshow(data[:, :, no], cmap='gray')
+        plt.imshow(data[idx, :, :], cmap='gray')
         plt.axis('off')
         plt.show()
 
@@ -108,9 +108,9 @@ class Dataset():
         for i in range(1, self.cn + 1):
             mask = (GT_mask == i)
             idx = np.where(mask.flatten())[0].reshape((-1, 1))
-            T1 = self.T1[:, :, s_idx][mask].reshape((-1, 1))
-            T2 = self.T2[:, :, s_idx][mask].reshape((-1, 1))
-            PD = self.PD[:, :, s_idx][mask].reshape((-1, 1))
+            T1 = self.T1[s_idx, :, :][mask].reshape((-1, 1))
+            T2 = self.T2[s_idx, :, :][mask].reshape((-1, 1))
+            PD = self.PD[s_idx, :, :][mask].reshape((-1, 1))
 
             label = np.ones(T1.shape) * i
 
@@ -122,7 +122,7 @@ class Dataset():
 
         return data[new_idx, :]
 
-    def group_data(self, GT_mask, prop=[0.6, 0.2, 0.2]):
+    def group_data(self, GT_mask, prop=[0.6, 0.2, 0.2], reserve=90):
         '''GROUP_DATA
 
         Generate training and validation data according to
@@ -130,7 +130,7 @@ class Dataset():
         which means that points extracted from 60% slices are
         training data, points extracted from 20% slices are
         validation data, the other points in left 20% slices
-        are testing data.
+        are testing data. Reserve one slice for test.
 
         '''
 
@@ -144,11 +144,17 @@ class Dataset():
         vas_idx = slice_idx[tn:(tn + vn - 1)]
         tes_idx = slice_idx[(tn + vn):]
 
-        # Form the training set and validation set
-        self.train = self.extract_data(GT_mask[:, :, trs_idx], trs_idx)
-        self.valid = self.extract_data(GT_mask[:, :, vas_idx], vas_idx)
+        # Reserve the 90th slice (default) for test
+        if np.isnan(np.where(tes_idx == reserve)[0]):
+            trs_idx[np.where(trs_idx == reserve)] = []
+            vas_idx[np.where(vas_idx == reserve)] = []
+            tes_idx = np.append(tes_idx, reserve)
 
-        # Save the index of test slice into a text file
+        # Form the training set and validation set
+        self.train = self.extract_data(GT_mask[trs_idx, :, :], trs_idx)
+        self.valid = self.extract_data(GT_mask[vas_idx, :, :], vas_idx)
+
+        # Save the index of test slices into a text file
         f = open('idx.txt', 'w')
         for item in tes_idx:
             f.write("{}\n".format(item))
@@ -163,6 +169,6 @@ class Dataset():
         '''
 
         print("You have chosen NO.{} slice.\n".format(idx))
-        self.test = self.extract_data(GT_mask[:, :, idx], idx)
+        self.test = self.extract_data(GT_mask[idx, :, :], idx)
 
         return

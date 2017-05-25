@@ -122,7 +122,7 @@ class TestModel():
             print("Plot slice - This slice has no CSF, GM and WM.")
             return
 
-        v_shape = self.dims[0:2]
+        v_shape = self.dims[1:3]
         pred_v = np.zeros(v_shape).reshape((-1, 1))
         true_v = np.zeros(v_shape).reshape((-1, 1))
 

@@ -12,11 +12,10 @@ from dataset import Dataset
 from test_model import TestModel
 
 
-# Load data for testing model
-T1_path = 'Data/T1.mat'
-T2_path = 'Data/T2.mat'
-PD_path = 'Data/PD.mat'
-GT_path = 'Data/GT.mat'
+T1_path = 'Data/t1_icbm_normal_1mm_pn0_rf0.mnc'
+T2_path = 'Data/t2_icbm_normal_1mm_pn0_rf0.mnc'
+PD_path = 'Data/pd_icbm_normal_1mm_pn0_rf0.mnc'
+GT_path = 'Data/phantom_1.0mm_normal_crisp.mnc'
 
 ds = Dataset()
 
@@ -41,15 +40,17 @@ idx_median = int(np.median(idx))
 idx_pos = np.where(idx == idx_median)[0]
 
 # Use the median index of slice as a test case
-if len(idx_pos) == 0:
-    slice_no = np.where(idx == (idx_median + 1))[0]
-else:
-    slice_no = idx_pos
+# if len(idx_pos) == 0:
+    # slice_no = np.where(idx == (idx_median + 1))[0]
+# else:
+    # slice_no = idx_pos
 
 # Or you can appoint a slice between 0 and len(idx) - 1
-slice_no = 18
+# slice_no = 13
+# ds.test_data(GT_mask, idx[slice_no])
 
-ds.test_data(GT_mask, idx[slice_no])
+# Test 90th slice of the volume
+ds.test_data(GT_mask, 90)
 
 # Test model
 tm = TestModel(ds)

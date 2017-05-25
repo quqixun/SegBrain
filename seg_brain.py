@@ -11,11 +11,10 @@ from dataset import Dataset
 from train_model import TrainModel
 
 
-# Load data for training
-T1_path = 'Data/T1.mat'
-T2_path = 'Data/T2.mat'
-PD_path = 'Data/PD.mat'
-GT_path = 'Data/GT.mat'
+T1_path = 'Data/t1_icbm_normal_1mm_pn0_rf0.mnc'
+T2_path = 'Data/t2_icbm_normal_1mm_pn0_rf0.mnc'
+PD_path = 'Data/pd_icbm_normal_1mm_pn0_rf0.mnc'
+GT_path = 'Data/phantom_1.0mm_normal_crisp.mnc'
 
 # Initialize instance for input data
 ds = Dataset()
