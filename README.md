@@ -1,6 +1,6 @@
 ## Basic Information of Code
 
-This is an implementation a simple neural network to segment
+This is an implementation of a simple neural network to segment
 brain tissues (white matter, gray matter and cerebrospinal fluid).
 
 Data of brain volume is downloaded from [BrainWeb](http://brainweb.bic.mni.mcgill.ca/brainweb/).
